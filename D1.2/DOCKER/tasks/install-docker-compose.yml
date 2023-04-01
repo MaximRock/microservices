@@ -1,0 +1,37 @@
+---
+
+#================= Install Docker-compose ==========================================
+- name: Install required system packages Python
+  ansible.builtin.apt:
+    pkg:
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+    state: latest
+    update_cache: true
+
+- name: Install Docker-Compose
+  ansible.builtin.get_url:
+    url: https://github.com/docker/compose/releases/download/v{{ ver_docker_compose }}/docker-compose-{{ ansible_system | lower }}-{{ ansible_architecture | lower}}
+    dest: /usr/bin/docker-compose
+    mode: 0755    
+
+- name: Install Docker Module for Python          
+  ansible.builtin.pip:
+    name:
+      - docker
+      - docker-compose
+
+#================ version output docker-compose ======================================
+
+- name: Command shell
+  ansible.builtin.shell: docker-compose -v
+  register: docker_version
+
+- name: Set Variable
+  ansible.builtin.set_fact:
+    my_docker: "{{ docker_version.stdout }}"
+
+- name: Print Docker version 
+  ansible.builtin.debug:
+    msg: "{{ my_docker }}"      

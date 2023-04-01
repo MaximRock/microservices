@@ -1,0 +1,21 @@
+---
+
+- name: Create directory
+  ansible.builtin.file:
+    path: '{{ path_home_project }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy file docker-compose
+  ansible.builtin.copy:
+    src: 'file/docker-compose.yml'
+    dest: '{{ path_home_project }}/docker-compose.yml'
+
+- name: deploy Docker Compose stack
+  community.docker.docker_compose:
+    project_src: '{{ path_home_project }}'
+    files:
+      - docker-compose.yml
+

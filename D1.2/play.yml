@@ -1,0 +1,13 @@
+---
+
+- name: Install microservices
+  hosts:
+    - test
+  become: true
+  roles:
+    - role: DOCKER
+      tags:
+        - docker
+    - role: ONLINE-STORE
+      tags:
+       - micro
