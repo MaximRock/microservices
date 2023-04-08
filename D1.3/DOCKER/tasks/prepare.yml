@@ -2,7 +2,6 @@
 
 - name: Update and upgrade apt packages
   ansible.builtin.apt:
-    #upgrade: "yes"
     update_cache: true
 
 #=========== TCP UDP manager ======================
