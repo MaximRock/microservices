@@ -1,0 +1,56 @@
+---
+# tasks file for SWARM
+
+- name: Init Swarm
+  community.docker.docker_swarm:
+    state: present
+  register: __output_swarm
+  when: 
+    ansible_hostname == "manager"
+
+- name: Debug JoinTokens
+  ansible.builtin.debug:
+    msg: "{{ __output_swarm.swarm_facts.JoinTokens.Worker }}"
+  when:
+    ansible_hostname == "manager" 
+
+- name: Install worker
+  community.docker.docker_swarm:
+    state: "join"
+    timeout: 60
+    advertise_addr: "{{ ansible_ssh_host }}"
+    join_token: "{{ hostvars[groups['manager_swarm'][0]]['__output_swarm']['swarm_facts']['JoinTokens']['Worker'] }}"
+    remote_addrs: ['10.128.0.10:2377'] #["{{ hostvars[groups['manager_swarm'][0]]['ansible_default_ipv4']['address'] }}:2377 }}"] #"{{ groups['manager_swarm'][0] }}" #"10.128.0.10:2377"
+  when:
+    ansible_hostname != "manager"
+
+- name: Install jsondiff and pyyaml
+  ansible.builtin.pip:
+    name:
+      - jsondiff
+      - pyyaml
+
+- name: Copy file docker-compose.yml
+  ansible.builtin.copy:
+    src: file/docker-compose.yml
+    dest: /home/admin/docker-compose.yml
+  when:
+    ansible_hostname == "manager"
+
+- name: New labels
+  community.docker.docker_node:
+    hostname: worker-1
+    labels:
+      TAG: worker-1
+  when:
+    ansible_hostname == "manager"
+
+- name: Deploy stack swarm
+  community.docker.docker_stack:
+    state: present
+    name: demo
+    compose:
+      - /home/admin/docker-compose.yml
+  when:
+    ansible_hostname == "manager"
+  run_once: yes

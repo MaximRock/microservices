@@ -1,0 +1,12 @@
+---
+# tasks file for DOCKER
+
+- name: Setting Server
+  ansible.builtin.include_tasks: tasks/prepare.yml
+
+- name: Install Docker
+  ansible.builtin.include_tasks: tasks/docker.yml
+
+- name: Install Docker-compose
+  ansible.builtin.include_tasks: tasks/install-docker-compose.yml  
+    
