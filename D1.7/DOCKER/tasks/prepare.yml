@@ -1,0 +1,68 @@
+---
+
+- name: Update and upgrade apt packages
+  ansible.builtin.apt:
+    #upgrade: "yes"
+    update_cache: true
+
+#=========== TCP UDP manager ======================
+- block:
+
+  - name: Allow TCP ports manager
+    ansible.builtin.iptables:
+      chain: INPUT
+      rule_num: '1'
+      action: insert
+      protocol: TCP
+      jump: ACCEPT
+      destination_port: "{{ item }}"
+    loop:
+      - '2376'
+      - '2377'
+      - '7946'
+      
+  - name: Allow UDP ports manager
+    ansible.builtin.iptables:
+      chain: INPUT
+      rule_num: '1'
+      action: insert
+      protocol: UDP
+      jump: ACCEPT
+      destination_port: "{{ item }}"
+    loop:
+      - '7946'
+      - '4789'
+        
+  when: 
+    inventory_hostname in groups['manager_swarm']
+
+#=========== TCP UDP worker ======================
+  
+- block: 
+
+  - name: Allow TCP ports worker
+    ansible.builtin.iptables:
+      chain: INPUT
+      rule_num: '1'
+      action: insert
+      protocol: TCP
+      jump: ACCEPT
+      destination_port: "{{ item }}"
+    loop:
+      - '2376'
+      - '7946'
+      
+  - name: Allow UDP ports worker
+    ansible.builtin.iptables:
+      chain: INPUT
+      rule_num: '1'
+      action: insert
+      protocol: UDP
+      jump: ACCEPT
+      destination_port: "{{ item }}"
+    loop:
+      - '7946'
+      - '4789'
+        
+  when: 
+    inventory_hostname not in groups['manager_swarm']

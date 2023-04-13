@@ -1,0 +1,59 @@
+---
+
+- name: Install aptitude
+  ansible.builtin.apt:
+    name:
+      - aptitude
+    state: latest
+    update_cache: true
+
+- name: Install required system packages
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: latest
+    update_cache: true
+
+- name: Add Docker GPG apt Key
+  ansible.builtin.apt_key:
+    url: 'https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg'
+    state: present
+
+- name: Add Docker Repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Update apt and install docker-ce
+  ansible.builtin.apt:
+    name: docker-ce
+    state: latest
+    update_cache: true
+
+- name: Add user to Docker group
+  ansible.builtin.user:
+    name: admin
+    group: docker
+
+- name: Start Docker service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true    
+
+#================ version output docker ======================================
+
+- name: Command shell
+  ansible.builtin.shell: docker -v
+  register: docker_version
+
+- name: Set Variable  
+  ansible.builtin.set_fact:
+    my_docker: "{{ docker_version.stdout }}"
+
+- name: Print Docker version 
+  ansible.builtin.debug:
+    msg: "{{ my_docker }}"

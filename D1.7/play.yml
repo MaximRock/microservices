@@ -1,0 +1,15 @@
+---
+
+- name: Install microservices
+  hosts: 
+    - manager_swarm
+    - worker
+  become: true
+  roles:
+    - role: DOCKER
+      tags:
+        - docker
+    - role: SWARM
+      tags:
+        - swarm
+
